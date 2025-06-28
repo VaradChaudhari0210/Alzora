@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  fullName     String
+  email        String    @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime  @default(now())
+  memoryUploads     MemoryUpload[]
+  caregiverNotes    CaregiverNote[] @relation("CaregiverNotes")
+  chatLogs          ChatLog[]
+  feedbacks         Feedback[]
+  faceRegistryItems FaceRegistry[]
+}
+
+model MemoryUpload {
+  id         Int       @id @default(autoincrement())
+  user       User      @relation(fields: [userId], references: [id])
+  userId     Int
+  type       MemoryType
+  filePath   String
+  uploadTime DateTime  @default(now())
+  tags       String[]
+  status     String    @default("pending")
+  memory     ReconstructedMemory?
+  caregiverNotes CaregiverNote[] @relation("UploadNotes")
+}
+
+model ReconstructedMemory {
+  id         Int       @id @default(autoincrement())
+  upload     MemoryUpload @relation(fields: [uploadId], references: [id])
+  uploadId   Int @unique
+  aiSummary  String
+  entities   Json
+  eventDate  DateTime?
+  isVerified Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  chatLogs   ChatLog[]
+  feedbacks  Feedback[]
+}
+
+model ChatLog {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  message    String
+  response   String
+  memory     ReconstructedMemory @relation(fields: [memoryId], references: [id])
+  memoryId   Int
+  createdAt  DateTime @default(now())
+}
+
+model CaregiverNote {
+  id          Int          @id @default(autoincrement())
+  caregiver   User         @relation("CaregiverNotes", fields: [caregiverId], references: [id])
+  caregiverId Int
+  upload      MemoryUpload @relation("UploadNotes", fields: [uploadId], references: [id])
+  uploadId    Int
+  note        String
+  createdAt   DateTime     @default(now())
+}
+
+model Feedback {
+  id         Int                  @id @default(autoincrement())
+  user       User                 @relation(fields: [userId], references: [id])
+  userId     Int
+  memory     ReconstructedMemory @relation(fields: [memoryId], references: [id])
+  memoryId   Int
+  rating     Int
+  comment    String?
+  createdAt  DateTime             @default(now())
+}
+
+model FaceRegistry {
+  id           Int      @id @default(autoincrement())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int
+  personName   String
+  imageRef     String
+  createdAt    DateTime @default(now())
+}
+
+enum Role {
+  patient
+  caregiver
+}
+
+enum MemoryType {
+  image
+  audio
+  video
+  text
+}
+
+model BlacklistedToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  blacklistedAt DateTime @default(now())
+}
