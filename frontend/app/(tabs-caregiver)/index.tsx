@@ -14,6 +14,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, Users, Bell, Settings, Heart, Brain, Activity, Calendar, MessageSquare, Phone, Mail, Clock, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, User, CreditCard as Edit3, Shield, Eye, X } from 'lucide-react-native';
 
+import { LogOut } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@hooks/useAuth';
+
 export default function CaregiverScreen() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [modalVisible, setModalVisible] = useState(false);
@@ -21,6 +25,14 @@ export default function CaregiverScreen() {
   const [newCaregiverName, setNewCaregiverName] = useState('');
   const [newCaregiverPhone, setNewCaregiverPhone] = useState('');
   const [newCaregiverEmail, setNewCaregiverEmail] = useState('');
+
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace('/login');
+  };
 
   const caregivers = [
     {
@@ -287,12 +299,17 @@ export default function CaregiverScreen() {
           <Text style={styles.headerTitle}>Care Dashboard</Text>
           <Text style={styles.headerSubtitle}>Manage care and monitor well-being</Text>
         </View>
-        <TouchableOpacity style={styles.notificationButton}>
-          <Bell size={24} color="#8B5A9F" strokeWidth={2} />
-          <View style={styles.notificationBadge}>
-            <Text style={styles.notificationBadgeText}>3</Text>
-          </View>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity style={styles.notificationButton}>
+            <Bell size={24} color="#8B5A9F" strokeWidth={2} />
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>3</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <LogOut size={22} color="#8B5A9F" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Tab Navigation */}
@@ -781,5 +798,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
+  },
+  logoutButton: {
+    marginLeft: 12,
+    padding: 8,
+    backgroundColor: '#F3E8FF',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

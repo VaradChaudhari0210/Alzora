@@ -31,6 +31,8 @@ model MemoryUpload {
   id         Int       @id @default(autoincrement())
   user       User      @relation(fields: [userId], references: [id])
   userId     Int
+  title      String
+  description String
   type       MemoryType
   filePath   String
   uploadTime DateTime  @default(now())

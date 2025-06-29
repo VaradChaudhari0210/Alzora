@@ -6,7 +6,8 @@ import {
   ScrollView, 
   TouchableOpacity, 
   Image,
-  Dimensions 
+  Dimensions,
+  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -21,9 +22,14 @@ import {
   Clock
 } from 'lucide-react-native';
 
+import { useAuth } from '@hooks/useAuth';
+import { useRouter } from 'expo-router';
+
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
+  const { user } = useAuth();
+  const router = useRouter();
   const recentMemories = [
     {
       id: 1,
@@ -54,14 +60,16 @@ export default function HomeScreen() {
       title: "Talk to Memories", 
       subtitle: "Chat about your past",
       color: "#6B9BD8",
-      bgColor: "#EBF4FF"
+      bgColor: "#EBF4FF",
+      onPress: () => router.push('/chat')
     },
     { 
       icon: Camera, 
       title: "Add Memory", 
       subtitle: "Capture new moments",
       color: "#7BB686",
-      bgColor: "#F0F9F4"
+      bgColor: "#F0F9F4",
+      onPress: () => router.push('/add-memory'),
     },
     { 
       icon: Clock, 
@@ -86,7 +94,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>Good Morning</Text>
-            <Text style={styles.userName}>Margaret</Text>
+            <Text style={styles.userName}>{user?.fullName || 'User'}</Text>
           </View>
           <TouchableOpacity style={styles.profileButton}>
             <Image 
@@ -127,7 +135,11 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.quickActionsGrid}>
             {quickActions.map((action, index) => (
-              <TouchableOpacity key={index} style={[styles.quickActionCard, { backgroundColor: action.bgColor }]}>
+              <TouchableOpacity 
+              key={index} 
+              style={[styles.quickActionCard, { backgroundColor: action.bgColor }]}
+              onPress={action.onPress}
+              >
                 <View style={[styles.quickActionIcon, { backgroundColor: action.color }]}>
                   <action.icon size={24} color="#FFFFFF" strokeWidth={2} />
                 </View>

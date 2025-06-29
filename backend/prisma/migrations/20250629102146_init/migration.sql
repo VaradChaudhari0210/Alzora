@@ -88,11 +88,23 @@ CREATE TABLE "FaceRegistry" (
     CONSTRAINT "FaceRegistry_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "BlacklistedToken" (
+    "id" SERIAL NOT NULL,
+    "token" TEXT NOT NULL,
+    "blacklistedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "BlacklistedToken_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ReconstructedMemory_uploadId_key" ON "ReconstructedMemory"("uploadId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "BlacklistedToken_token_key" ON "BlacklistedToken"("token");
 
 -- AddForeignKey
 ALTER TABLE "MemoryUpload" ADD CONSTRAINT "MemoryUpload_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,8 +1,31 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import { Home, Clock, MessageCircle, Users, Camera } from 'lucide-react-native';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, ActivityIndicator, View } from 'react-native';
+import { useAuth } from '@hooks/useAuth';
+import { useEffect } from 'react';
 
 export default function TabLayout() {
+  const { token, loading, user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading) {
+      if (!token) {
+        router.replace('/login');
+      } else if (user?.role === 'caregiver') {
+        // Prevent caregivers from accessing patient tabs
+        router.replace('/(tabs-caregiver)');
+      }
+    }
+  }, [token, loading, user]);
+
+  if (loading || !user) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
   return (
     <Tabs
       screenOptions={{
@@ -49,9 +72,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="caregiver"
+        name="patient"
         options={{
-          title: 'Caregiver',
+          title: 'Patient',
           tabBarIcon: ({ size, color }) => (
             <Users size={size} color={color} strokeWidth={2} />
           ),
