@@ -20,8 +20,6 @@ scipy>=1.11.0
 
 # API and utilities
 requests>=2.31.0
-flask>=2.3.0
-flask-cors>=4.0.0
 
 # Data handling
 numpy>=1.24.0
