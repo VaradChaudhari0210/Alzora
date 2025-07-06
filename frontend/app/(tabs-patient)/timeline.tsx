@@ -1,426 +1,701 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
   Image,
-  TextInput
+  StyleSheet,
+  Dimensions,
+  SafeAreaView,
+  StatusBar
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
-  Search, 
-  Filter, 
-  Calendar,
-  MapPin,
-  Users,
-  Heart,
-  Camera,
-  Music,
-  Briefcase,
-  GraduationCap
+  Heart, 
+  Calendar, 
+  MapPin, 
+  Clock, 
+  ArrowLeft, 
+  ChevronLeft, 
+  ChevronRight,
+  Flower,
+  Sun,
+  Cloud,
+  Snowflake,
+  Star,
+  Leaf,
+  Smile
 } from 'lucide-react-native';
 
-export default function TimelineScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDecade, setSelectedDecade] = useState('All');
+const { width, height } = Dimensions.get('window');
 
-  const decades = ['All', '2020s', '2010s', '2000s', '1990s', '1980s', '1970s'];
+export default function PersonalMemoryCalendar() {
+  const [selectedYear, setSelectedYear] = useState(2024);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [view, setView] = useState('calendar');
+
+  const months = [
+    { name: 'January', icon: Snowflake, color: '#dbeafe', accent: '#3b82f6', border: '#bfdbfe' },
+    { name: 'February', icon: Heart, color: '#fce7f3', accent: '#ec4899', border: '#f9a8d4' },
+    { name: 'March', icon: Flower, color: '#dcfce7', accent: '#22c55e', border: '#bbf7d0' },
+    { name: 'April', icon: Flower, color: '#d1fae5', accent: '#10b981', border: '#a7f3d0' },
+    { name: 'May', icon: Leaf, color: '#ecfccb', accent: '#84cc16', border: '#d9f99d' },
+    { name: 'June', icon: Sun, color: '#fefce8', accent: '#eab308', border: '#fef08a' },
+    { name: 'July', icon: Sun, color: '#fff7ed', accent: '#f97316', border: '#fed7aa' },
+    { name: 'August', icon: Sun, color: '#fffbeb', accent: '#f59e0b', border: '#fde68a' },
+    { name: 'September', icon: Leaf, color: '#f0fdfa', accent: '#14b8a6', border: '#99f6e4' },
+    { name: 'October', icon: Leaf, color: '#fff7ed', accent: '#f97316', border: '#fed7aa' },
+    { name: 'November', icon: Cloud, color: '#f9fafb', accent: '#6b7280', border: '#e5e7eb' },
+    { name: 'December', icon: Snowflake, color: '#eef2ff', accent: '#6366f1', border: '#c7d2fe' }
+  ];
 
   const timelineEvents = [
     {
       id: 1,
-      year: '2023',
-      month: 'March',
-      title: 'Golden Anniversary Celebration',
-      description: 'Celebrated 50 years of marriage with family and friends',
-      image: 'https://images.pexels.com/photos/1024993/pexels-photo-1024993.jpeg?auto=compress&cs=tinysrgb&w=400',
-      type: 'celebration',
-      icon: Heart,
-      color: '#F59E0B',
-      location: 'Family Home'
+      year: 2024,
+      month: 3, // April (0-indexed)
+      day: 1,
+      title: 'April Fools Day Fun',
+      description: 'The grandkids tried to prank me with salt in the sugar bowl. We all had a good laugh.',
+      image: 'https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=400&h=300&fit=crop',
+      type: 'Family',
+      location: 'Kitchen',
+      time: '9:00 AM'
     },
     {
       id: 2,
-      year: '2022',
-      month: 'July',
-      title: "Grandson's Graduation",
-      description: 'Watched Tommy graduate from college with honors',
-      image: 'https://images.pexels.com/photos/267885/pexels-photo-267885.jpeg?auto=compress&cs=tinysrgb&w=400',
-      type: 'family',
-      icon: GraduationCap,
-      color: '#8B5A9F',
-      location: 'University Hall'
+      year: 2024,
+      month: 3, // April
+      day: 8,
+      title: 'First Spring Flowers',
+      description: 'The tulips I planted last fall are blooming beautifully in the front garden.',
+      image: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400&h=300&fit=crop',
+      type: 'Garden',
+      location: 'Front Garden',
+      time: '10:00 AM'
     },
     {
       id: 3,
-      year: '2021',
-      month: 'December',
-      title: 'Christmas Family Reunion',
-      description: 'All the grandchildren came home for the holidays',
-      image: 'https://images.pexels.com/photos/1648375/pexels-photo-1648375.jpeg?auto=compress&cs=tinysrgb&w=400',
-      type: 'family',
-      icon: Users,
-      color: '#DC2626',
-      location: 'Living Room'
+      year: 2024,
+      month: 3, // April
+      day: 15,
+      title: 'Easter with Family',
+      description: 'A wonderful day with everyone together. The children found all the eggs in the garden.',
+      image: 'https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=400&h=300&fit=crop',
+      type: 'Family',
+      location: 'Home',
+      time: '2:00 PM'
     },
     {
       id: 4,
-      year: '2019',
-      month: 'September',
-      title: 'Retirement Party',
-      description: 'Retired after 40 years of dedicated service',
-      image: 'https://images.pexels.com/photos/1181396/pexels-photo-1181396.jpeg?auto=compress&cs=tinysrgb&w=400',
-      type: 'career',
-      icon: Briefcase,
-      color: '#059669',
-      location: 'Office Building'
+      year: 2024,
+      month: 3, // April
+      day: 23,
+      title: 'Grandchildren Visit',
+      description: 'Sarah and Tommy came over. We made chocolate chip cookies and they helped with the mixing.',
+      image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop',
+      type: 'Family',
+      location: 'Kitchen',
+      time: '3:30 PM'
     },
     {
       id: 5,
-      year: '2015',
-      month: 'June',
-      title: 'Trip to Europe',
-      description: 'Wonderful vacation visiting Paris, Rome, and London',
-      image: 'https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg?auto=compress&cs=tinysrgb&w=400',
-      type: 'travel',
-      icon: Camera,
-      color: '#7C3AED',
-      location: 'Europe'
-    },
-    {
-      id: 6,
-      year: '1995',
-      month: 'April',
-      title: 'First Grandchild Born',
-      description: 'Sarah was born, bringing joy to the entire family',
-      image: 'https://images.pexels.com/photos/1648375/pexels-photo-1648375.jpeg?auto=compress&cs=tinysrgb&w=400',
-      type: 'family',
-      icon: Heart,
-      color: '#EC4899',
-      location: 'City Hospital'
-    },
-    {
-      id: 7,
-      year: '1985',
-      month: 'June',
-      title: 'Wedding Day',
-      description: 'Married the love of my life at the countryside chapel',
-      image: 'https://images.pexels.com/photos/1024993/pexels-photo-1024993.jpeg?auto=compress&cs=tinysrgb&w=400',
-      type: 'celebration',
-      icon: Heart,
-      color: '#F59E0B',
-      location: 'St. Mary\'s Chapel'
+      year: 2024,
+      month: 2, // March
+      day: 12,
+      title: 'Birthday Celebration',
+      description: 'My 75th birthday. Everyone sang happy birthday and we had my favorite chocolate cake.',
+      image: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=400&h=300&fit=crop',
+      type: 'Special',
+      location: 'Living Room',
+      time: '6:00 PM'
     }
   ];
 
-  const getFilteredEvents = () => {
-    let filtered = timelineEvents;
-    
-    if (selectedDecade !== 'All') {
-      const decadeStart = parseInt(selectedDecade.substring(0, 4));
-      filtered = filtered.filter(event => {
-        const eventYear = parseInt(event.year);
-        return eventYear >= decadeStart && eventYear < decadeStart + 10;
-      });
-    }
-    
-    if (searchQuery) {
-      filtered = filtered.filter(event => 
-        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        event.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-    
-    return filtered;
+  const getMonthMemories = (monthIndex) => {
+    return timelineEvents.filter(event => 
+      event.month === monthIndex && event.year === selectedYear
+    );
   };
 
-  return (
+  const getCurrentMonthMemories = () => {
+    return timelineEvents.filter(event => 
+      event.month === selectedMonth && event.year === selectedYear
+    ).sort((a, b) => a.day - b.day); // Sort chronologically by day
+  };
+
+  const CalendarView = () => (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Memory Timeline</Text>
-        <Text style={styles.headerSubtitle}>Your life's beautiful journey</Text>
+      <StatusBar barStyle="dark-content" backgroundColor="#fdf2f8" />
+      {/* Compact Header */}
+      <View style={styles.compactHeader}>
+        <View style={styles.compactHeaderContent}>
+          <View style={styles.compactHeaderLeft}>
+            <View style={styles.compactIconContainer}>
+              <Calendar size={20} color="#e11d48" />
+            </View>
+            <View>
+              <Text style={styles.compactHeaderTitle}>Hello, Sarah</Text>
+              <Text style={styles.compactHeaderSubtitle}>Your Memory Calendar</Text>
+            </View>
+          </View>
+          
+          <View style={styles.compactDateContainer}>
+            <Text style={styles.compactDateValue}>
+              {new Date().toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric' 
+              })}
+            </Text>
+          </View>
+        </View>
       </View>
 
-      {/* Search and Filter */}
-      <View style={styles.searchSection}>
-        <View style={styles.searchContainer}>
-          <Search size={20} color="#6B7280" strokeWidth={2} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search memories..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor="#9CA3AF"
-          />
-        </View>
-        <TouchableOpacity style={styles.filterButton}>
-          <Filter size={20} color="#8B5A9F" strokeWidth={2} />
+      {/* Compact Year Navigation */}
+      <View style={styles.compactYearNavigation}>
+        <TouchableOpacity
+          onPress={() => setSelectedYear(selectedYear - 1)}
+          style={styles.compactYearButton}
+        >
+          <ChevronLeft size={18} color="#6b7280" />
+        </TouchableOpacity>
+        
+        <Text style={styles.compactYearText}>
+          {selectedYear}
+        </Text>
+        
+        <TouchableOpacity
+          onPress={() => setSelectedYear(selectedYear + 1)}
+          style={styles.compactYearButton}
+        >
+          <ChevronRight size={18} color="#6b7280" />
         </TouchableOpacity>
       </View>
 
-      {/* Decade Filter */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
-        style={styles.decadeFilter}
-        contentContainerStyle={styles.decadeFilterContent}
-      >
-        {decades.map((decade) => (
-          <TouchableOpacity
-            key={decade}
-            style={[
-              styles.decadeButton,
-              selectedDecade === decade && styles.decadeButtonActive
-            ]}
-            onPress={() => setSelectedDecade(decade)}
-          >
-            <Text style={[
-              styles.decadeButtonText,
-              selectedDecade === decade && styles.decadeButtonTextActive
-            ]}>
-              {decade}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Timeline */}
-      <ScrollView style={styles.timeline} showsVerticalScrollIndicator={false}>
-        {getFilteredEvents().map((event, index) => (
-          <View key={event.id} style={styles.timelineItem}>
-            <View style={styles.timelineLeft}>
-              <View style={styles.timelineDate}>
-                <Text style={styles.timelineYear}>{event.year}</Text>
-                <Text style={styles.timelineMonth}>{event.month}</Text>
-              </View>
-              <View style={styles.timelineLine}>
-                <View style={[styles.timelineDot, { backgroundColor: event.color }]}>
-                  <event.icon size={16} color="#FFFFFF" strokeWidth={2} />
-                </View>
-                {index < getFilteredEvents().length - 1 && (
-                  <View style={styles.timelineConnector} />
-                )}
-              </View>
-            </View>
-            
-            <TouchableOpacity style={styles.timelineContent}>
-              <Image source={{ uri: event.image }} style={styles.timelineImage} />
-              <View style={styles.timelineText}>
-                <Text style={styles.timelineTitle}>{event.title}</Text>
-                <Text style={styles.timelineDescription}>{event.description}</Text>
-                <View style={styles.timelineLocation}>
-                  <MapPin size={14} color="#6B7280" strokeWidth={2} />
-                  <Text style={styles.timelineLocationText}>{event.location}</Text>
-                </View>
-                <View style={styles.timelineActions}>
-                  <TouchableOpacity style={styles.actionButton}>
-                    <Text style={styles.actionButtonText}>View Details</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.actionButton}>
-                    <Text style={styles.actionButtonText}>Share Story</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </TouchableOpacity>
+      {/* Month Grid - 4 columns x 3 rows like traditional calendar */}
+      <View style={styles.monthGrid}>
+        {[0, 1, 2].map((rowIndex) => (
+          <View key={rowIndex} style={styles.monthRow}>
+            {[0, 1, 2, 3].map((colIndex) => {
+              const monthIndex = rowIndex * 4 + colIndex;
+              const month = months[monthIndex];
+              const memories = getMonthMemories(monthIndex);
+              const MonthIcon = month.icon;
+              
+              return (
+                <TouchableOpacity
+                  key={monthIndex}
+                  onPress={() => {
+                    setSelectedMonth(monthIndex);
+                    setView('timeline');
+                  }}
+                  style={[styles.monthCard, { borderLeftColor: month.border }]}
+                >
+                  <View style={styles.monthCardContent}>
+                    <View style={styles.monthStarContainer}>
+                      <Star size={6} color="#d1d5db" />
+                    </View>
+                    
+                    <View style={[styles.monthIconContainer, { backgroundColor: month.color }]}>
+                      <MonthIcon size={16} color={month.accent} />
+                    </View>
+                    
+                    <Text style={styles.monthName}>
+                      {month.name.slice(0, 3)}
+                    </Text>
+                    
+                    <View style={styles.memoryCounter}>
+                      <View style={styles.memoryCounterBadge}>
+                        <Text style={styles.memoryCounterText}>{memories.length}</Text>
+                      </View>
+                    </View>
+                    
+                    <Text style={styles.memoryCounterLabel}>
+                      {memories.length === 1 ? 'memory' : 'memories'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         ))}
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
+
+  const TimelineView = () => {
+    const memories = getCurrentMonthMemories();
+    const currentMonth = months[selectedMonth];
+    
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#fdf2f8" />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.timelineHeader}>
+              <TouchableOpacity
+                onPress={() => setView('calendar')}
+                style={styles.backButton}
+              >
+                <ArrowLeft size={24} color="#6b7280" />
+              </TouchableOpacity>
+              
+              <View style={styles.timelineHeaderContent}>
+                <View style={[styles.timelineMonthIcon, { backgroundColor: currentMonth.color }]}>
+                  <currentMonth.icon size={24} color={currentMonth.accent} />
+                </View>
+                <View style={styles.timelineHeaderText}>
+                  <Text style={styles.timelineTitle}>
+                    {currentMonth.name} {selectedYear}
+                  </Text>
+                  <Text style={styles.timelineSubtitle}>
+                    {memories.length > 0 ? 
+                      `${memories.length} beautiful ${memories.length === 1 ? 'memory' : 'memories'} to revisit` :
+                      'A month full of possibilities'
+                    }
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Timeline */}
+          <View style={styles.timelineContainer}>
+            {memories.length > 0 ? (
+              <View style={styles.timeline}>
+                {memories.map((memory, index) => (
+                  <View key={memory.id} style={styles.timelineItem}>
+                    {/* Timeline dot */}
+                    <View style={styles.timelineDot}>
+                      <View style={styles.timelineDotInner} />
+                    </View>
+                    
+                    {/* Memory card */}
+                    <View style={styles.memoryCard}>
+                      {/* Date badge */}
+                      <View style={styles.memoryDateBadge}>
+                        <View style={styles.memoryDateLeft}>
+                          <Star size={12} color="#be185d" />
+                          <Text style={styles.memoryDateText}>Day {memory.day}</Text>
+                        </View>
+                        <View style={styles.memoryTypeBadge}>
+                          <Text style={styles.memoryTypeText}>{memory.type}</Text>
+                        </View>
+                      </View>
+                      
+                      {/* Memory image */}
+                      <Image 
+                        source={{ uri: memory.image }}
+                        style={styles.memoryImage}
+                      />
+                      
+                      {/* Memory content */}
+                      <View style={styles.memoryContent}>
+                        <Text style={styles.memoryTitle}>
+                          {memory.title}
+                        </Text>
+                        
+                        <View style={styles.memoryMeta}>
+                          <View style={styles.memoryMetaItem}>
+                            <Clock size={16} color="#f43f5e" />
+                            <Text style={styles.memoryMetaText}>{memory.time}</Text>
+                          </View>
+                          <View style={styles.memoryMetaItem}>
+                            <MapPin size={16} color="#f43f5e" />
+                            <Text style={styles.memoryMetaText}>{memory.location}</Text>
+                          </View>
+                        </View>
+                        
+                        <Text style={styles.memoryDescription}>
+                          {memory.description}
+                        </Text>
+                        
+                        <View style={styles.memoryFooter}>
+                          <View style={styles.memoryFooterLeft}>
+                            <Heart size={16} color="#f43f5e" />
+                            <Text style={styles.memoryFooterText}>Memory #{index + 1}</Text>
+                          </View>
+                          <Text style={styles.memoryFooterDate}>
+                            {new Date(selectedYear, selectedMonth, memory.day).toLocaleDateString('en-US', { 
+                              weekday: 'long'
+                            })}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.emptyState}>
+                <View style={styles.emptyStateIcon}>
+                  <Calendar size={40} color="#f43f5e" />
+                </View>
+                <Text style={styles.emptyStateTitle}>
+                  This month awaits new memories
+                </Text>
+                <Text style={styles.emptyStateSubtitle}>
+                  Every day brings new opportunities for beautiful moments
+                </Text>
+                <View style={styles.emptyStateIcons}>
+                  <Heart size={16} color="#fb7185" />
+                  <Flower size={16} color="#fb7185" />
+                  <Star size={16} color="#fb7185" />
+                </View>
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  };
+
+  return view === 'calendar' ? <CalendarView /> : <TimelineView />;
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#fdf2f8',
+  },
+  compactHeader: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  compactHeaderContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  compactHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  compactIconContainer: {
+    width: 36,
+    height: 36,
+    backgroundColor: '#fce7f3',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  compactHeaderTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  compactHeaderSubtitle: {
+    color: '#6b7280',
+    fontSize: 12,
+  },
+  compactDateContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: '#fce7f3',
+  },
+  compactDateValue: {
+    color: '#1f2937',
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  compactYearNavigation: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  compactYearButton: {
+    width: 32,
+    height: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 16,
+  },
+  compactYearText: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  monthGrid: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  monthRow: {
+    flexDirection: 'row',
+    flex: 1,
+    marginBottom: 8,
+  },
+  monthCard: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 12,
+    padding: 8,
+    marginHorizontal: 4,
+    borderLeftWidth: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    aspectRatio: 1,
+  },
+  monthCardContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+  },
+  monthStarContainer: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    opacity: 0.3,
+  },
+  monthIconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  monthName: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  memoryCounter: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  memoryCounterBadge: {
+    width: 18,
+    height: 18,
+    backgroundColor: '#fce7f3',
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  memoryCounterText: {
+    color: '#e11d48',
+    fontWeight: '600',
+    fontSize: 10,
+  },
+  memoryCounterLabel: {
+    color: '#6b7280',
+    fontSize: 9,
+    textAlign: 'center',
   },
   header: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingTop: 20,
+    paddingBottom: 10,
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
-    fontFamily: 'Inter-Bold',
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginTop: 4,
-    fontFamily: 'Inter-Regular',
-  },
-  searchSection: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  searchContainer: {
-    flex: 1,
+  timelineHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginRight: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
   },
-  searchInput: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
-    color: '#111827',
-    fontFamily: 'Inter-Regular',
-  },
-  filterButton: {
-    backgroundColor: '#FFFFFF',
-    padding: 12,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  decadeFilter: {
-    marginBottom: 16,
-  },
-  decadeFilterContent: {
-    paddingHorizontal: 20,
-  },
-  decadeButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 12,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  decadeButtonActive: {
-    backgroundColor: '#8B5A9F',
-    borderColor: '#8B5A9F',
-  },
-  decadeButtonText: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontFamily: 'Inter-Medium',
-  },
-  decadeButtonTextActive: {
-    color: '#FFFFFF',
-  },
-  timeline: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  timelineItem: {
-    flexDirection: 'row',
-    marginBottom: 24,
-  },
-  timelineLeft: {
+  backButton: {
+    width: 48,
+    height: 48,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 24,
+    justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
   },
-  timelineDate: {
+  timelineHeaderContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    flex: 1,
   },
-  timelineYear: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-    fontFamily: 'Inter-Bold',
-  },
-  timelineMonth: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontFamily: 'Inter-Regular',
-  },
-  timelineLine: {
+  timelineMonthIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 16,
+  },
+  timelineHeaderText: {
+    flex: 1,
+  },
+  timelineTitle: {
+    fontSize: 32,
+    fontWeight: '300',
+    color: '#1f2937',
+  },
+  timelineSubtitle: {
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  timelineContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 30,
+  },
+  timeline: {
+    position: 'relative',
+  },
+  timelineItem: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    position: 'relative',
   },
   timelineDot: {
     width: 32,
     height: 32,
+    backgroundColor: '#ffffff',
     borderRadius: 16,
+    borderWidth: 4,
+    borderColor: '#f9a8d4',
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 16,
+    marginTop: 20,
   },
-  timelineConnector: {
-    width: 2,
-    height: 60,
-    backgroundColor: '#E5E7EB',
-    marginTop: 8,
+  timelineDotInner: {
+    width: 12,
+    height: 12,
+    backgroundColor: '#fb7185',
+    borderRadius: 6,
   },
-  timelineContent: {
+  memoryCard: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 24,
+    borderLeftWidth: 4,
+    borderLeftColor: '#f9a8d4',
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
-  timelineImage: {
-    width: '100%',
-    height: 150,
-  },
-  timelineText: {
-    padding: 16,
-  },
-  timelineTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 8,
-    fontFamily: 'Inter-SemiBold',
-  },
-  timelineDescription: {
-    fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 20,
-    marginBottom: 12,
-    fontFamily: 'Inter-Regular',
-  },
-  timelineLocation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  timelineLocationText: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginLeft: 6,
-    fontFamily: 'Inter-Regular',
-  },
-  timelineActions: {
+  memoryDateBadge: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  actionButton: {
-    flex: 1,
-    backgroundColor: '#F3E8FF',
-    paddingVertical: 8,
+    alignItems: 'center',
     paddingHorizontal: 16,
-    borderRadius: 8,
-    marginHorizontal: 4,
+    paddingVertical: 12,
+    backgroundColor: '#fdf2f8',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f9a8d4',
+  },
+  memoryDateLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  actionButtonText: {
-    fontSize: 14,
-    color: '#8B5A9F',
+  memoryDateText: {
+    color: '#be185d',
+    fontWeight: '500',
+    fontSize: 12,
+    marginLeft: 8,
+  },
+  memoryTypeBadge: {
+    backgroundColor: '#fce7f3',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  memoryTypeText: {
+    color: '#be185d',
+    fontWeight: '500',
+    fontSize: 10,
+  },
+  memoryImage: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover',
+  },
+  memoryContent: {
+    padding: 16,
+  },
+  memoryTitle: {
+    fontSize: 18,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    color: '#1f2937',
+    marginBottom: 12,
+  },
+  memoryMeta: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  memoryMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  memoryMetaText: {
+    color: '#6b7280',
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  memoryDescription: {
+    color: '#374151',
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  memoryFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f9a8d4',
+  },
+  memoryFooterLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  memoryFooterText: {
+    color: '#e11d48',
+    fontSize: 12,
+    marginLeft: 8,
+  },
+  memoryFooterDate: {
+    color: '#6b7280',
+    fontSize: 10,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 80,
+  },
+  emptyStateIcon: {
+    width: 80,
+    height: 80,
+    backgroundColor: '#fce7f3',
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: '500',
+    color: '#1f2937',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  emptyStateSubtitle: {
+    color: '#6b7280',
+    fontSize: 16,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  emptyStateIcons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
   },
 });

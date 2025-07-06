@@ -55,7 +55,7 @@ export default function LoginScreen() {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      const res = await fetch('http://192.168.56.1:3000/auth/login', {
+      const res = await fetch('http://localhost:3000/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
