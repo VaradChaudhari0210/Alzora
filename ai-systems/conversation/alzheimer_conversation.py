@@ -44,16 +44,17 @@ class AlzheimerConversationAI:
         print("✓ Conversation AI ready!")
     
     def _load_model(self):
-        """Load the Llama-3-Nanda-10B-Chat model"""
+        """Load model with RTX 3050 4GB optimized settings"""
         print(f"Loading {self.model_path} model...")
         
         try:
             # Set custom cache directory
             import os
-            custom_cache_dir = "F:\\Models\\HuggingFace"  # Change to your preferred location
+            custom_cache_dir = "F:\\Models\\HuggingFace"
             os.makedirs(custom_cache_dir, exist_ok=True)
             
-            # Set environment variables
+            # Configure environment
+            os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
             os.environ["HF_HOME"] = custom_cache_dir
             os.environ["TRANSFORMERS_CACHE"] = os.path.join(custom_cache_dir, "transformers")
             os.environ["HF_DATASETS_CACHE"] = os.path.join(custom_cache_dir, "datasets")
@@ -63,14 +64,10 @@ class AlzheimerConversationAI:
             # Hugging Face authentication
             from huggingface_hub import login
             
-            # Get token from environment or prompt user
+            # Get token
             hf_token = os.getenv('HF_TOKEN')
             if not hf_token:
                 print("\n📋 Please enter your Hugging Face token:")
-                print("1. Make sure you have been granted access to MBZUAI/Llama-3-Nanda-10B-Chat")
-                print("2. Go to: https://huggingface.co/settings/tokens")
-                print("3. Create a new token with 'Read' permissions")
-                print("4. Copy and paste it below")
                 hf_token = input("\nEnter your HF Token: ").strip()
             
             if not hf_token:
@@ -80,59 +77,95 @@ class AlzheimerConversationAI:
             login(token=hf_token)
             print("✓ Logged in to Hugging Face")
             
-            # Load tokenizer with explicit token and cache directory
+            # Load tokenizer first
             print("Loading tokenizer...")
             self.tokenizer = AutoTokenizer.from_pretrained(
                 self.model_path,
                 trust_remote_code=True,
                 token=hf_token,
-                cache_dir=custom_cache_dir  # Explicit cache directory
+                cache_dir=custom_cache_dir,
+                local_files_only=True
             )
             print("✓ Tokenizer loaded successfully")
             
-            # Set up quantization for better memory usage
-            print("Loading model...")
-            if self.use_quantization and torch.cuda.is_available():
+            # RTX 3050 4GB specific optimization
+            if torch.cuda.is_available():
+                gpu_memory = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+                print(f"🔧 GPU: RTX 3050 with {gpu_memory:.1f} GB VRAM")
+                print("🚀 Using RTX 3050 optimized loading strategy...")
+                
+                # Use 8-bit quantization with CPU offloading (more stable than 4-bit)
                 quantization_config = BitsAndBytesConfig(
-                    load_in_4bit=True,
-                    bnb_4bit_quant_type="nf4",
-                    bnb_4bit_compute_dtype=torch.bfloat16,
-                    bnb_4bit_use_double_quant=True,
+                    load_in_8bit=True,
+                    llm_int8_enable_fp32_cpu_offload=True,  # Enable CPU offload
+                    llm_int8_threshold=6.0
                 )
                 
+                # Conservative memory allocation for RTX 3050
+                max_memory = {
+                    0: "3.2GB",    # Conservative GPU usage (80% of 4GB)
+                    "cpu": "12GB"  # Allow generous CPU usage
+                }
+                
+                print("📦 Loading with 8-bit quantization and CPU-GPU hybrid...")
                 self.model = AutoModelForCausalLM.from_pretrained(
                     self.model_path,
                     quantization_config=quantization_config,
                     device_map="auto",
+                    max_memory=max_memory,
                     trust_remote_code=True,
-                    torch_dtype=torch.bfloat16,
+                    torch_dtype=torch.float16,
                     token=hf_token,
-                    cache_dir=custom_cache_dir  # Explicit cache directory
+                    cache_dir=custom_cache_dir,
+                    local_files_only=True,
+                    low_cpu_mem_usage=True,
+                    offload_folder="temp_offload"
                 )
+                print("✓ Model loaded with RTX 3050 optimized settings")
+                
             else:
+                print("🖥️  No GPU detected. Using CPU-only mode...")
                 self.model = AutoModelForCausalLM.from_pretrained(
                     self.model_path,
-                    device_map="auto" if torch.cuda.is_available() else None,
+                    device_map="cpu",
                     trust_remote_code=True,
-                    torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                    torch_dtype=torch.float32,
                     token=hf_token,
-                    cache_dir=custom_cache_dir  # Explicit cache directory
+                    cache_dir=custom_cache_dir,
+                    local_files_only=True,
+                    low_cpu_mem_usage=True
                 )
+                print("✓ Model loaded on CPU")
             
             print("✓ Nanda model loaded successfully")
             print(f"✓ Model device: {self.device}")
-            print(f"✓ Using quantization: {self.use_quantization}")
             print(f"✓ Models cached in: {custom_cache_dir}")
+            
+            # Check final device distribution
+            self.check_model_device_distribution()
             
         except Exception as e:
             print(f"❌ Error loading conversation model: {e}")
-            print("💡 Troubleshooting steps:")
-            print("💡 1. Verify access at: https://huggingface.co/MBZUAI/Llama-3-Nanda-10B-Chat")
-            print("💡 2. Check your token has 'Read' permissions")
-            print("💡 3. Try creating a new token")
-            print("💡 4. Make sure you're using the latest transformers version")
-            raise
-    
+            print("\n🔄 Trying fallback strategy...")
+            
+            # Fallback: CPU-only loading
+            try:
+                print("Loading in CPU-only mode as fallback...")
+                self.model = AutoModelForCausalLM.from_pretrained(
+                    self.model_path,
+                    device_map="cpu",
+                    trust_remote_code=True,
+                    torch_dtype=torch.float32,
+                    token=hf_token,
+                    cache_dir=custom_cache_dir,
+                    local_files_only=True,
+                    low_cpu_mem_usage=True
+                )
+                print("✓ Fallback: Model loaded on CPU only")
+            except Exception as fallback_error:
+                print(f"❌ Fallback also failed: {fallback_error}")
+                raise RuntimeError("Failed to load model on both GPU and CPU")
+
     def _load_conversation_templates(self):
         """Load conversation templates for different scenarios"""
         self.templates = {
@@ -194,20 +227,42 @@ Respond in the same language the user speaks (English or Hindi). Keep responses 
         
         return formatted_prompt
     
-    def create_patient_profile(self, patient_id: str, profile_data: Dict[str, Any]):
-        """Create or update patient profile with personal information"""
-        self.patient_profiles[patient_id] = {
-            "name": profile_data.get("name", ""),
-            "age": profile_data.get("age", ""),
-            "family_members": profile_data.get("family_members", []),
-            "important_memories": profile_data.get("important_memories", []),
-            "preferences": profile_data.get("preferences", {}),
-            "medical_info": profile_data.get("medical_info", {}),
-            "created_at": datetime.now().isoformat()
-        }
-        
-        print(f"✓ Patient profile created for {profile_data.get('name', patient_id)}")
-        return True
+    def create_patient_profile(self, patient_id: str, profile_data: dict) -> dict:
+        """Create or update patient profile"""
+        try:
+            # Validate required fields
+            if not patient_id:
+                raise ValueError("Patient ID is required")
+            
+            # Ensure age is properly handled
+            if 'age' in profile_data and profile_data['age'] is not None:
+                profile_data['age'] = int(profile_data['age'])  # This line is causing the error
+            
+            # Store profile
+            self.patient_profiles[patient_id] = {
+                'patient_id': patient_id,
+                'name': profile_data.get('name', 'Patient'),
+                'age': profile_data.get('age', 0),  # Default age to avoid None
+                'family_members': profile_data.get('family_members', []),
+                'important_memories': profile_data.get('important_memories', []),
+                'preferences': profile_data.get('preferences', {}),
+                'created_at': datetime.now().isoformat(),
+                'updated_at': datetime.now().isoformat()
+            }
+            
+            print(f"✓ Created profile for patient: {patient_id}")
+            return {
+                'success': True,
+                'message': 'Patient profile created successfully',
+                'patient_id': patient_id
+            }
+            
+        except Exception as e:
+            print(f"❌ Error creating patient profile: {e}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
     
     def start_conversation(self, patient_id: str) -> tuple:
         """Start a new conversation session"""
@@ -413,45 +468,90 @@ Respond in the same language the user speaks (English or Hindi). Keep responses 
         }
         return suggestions.get(mood, "Continue normal conversation")
     
-    def _download_files_sequentially(self, repo_id: str, cache_dir: str, token: str):
-        """Download model files one by one for better control"""
+    def _download_model_files_individually(self, repo_id: str, cache_dir: str, token: str):
+        """Download each model file one by one to prevent conflicts"""
         from huggingface_hub import list_repo_files, hf_hub_download
         import time
         
-        print("📋 Getting list of model files...")
+        print("📋 Downloading files individually...")
         
-        # Get list of all files in the repo
         try:
+            # Get list of model files
             files = list_repo_files(repo_id, token=token)
-            print(f"Found {len(files)} files to download")
-        except Exception as e:
-            print(f"Error listing files: {e}")
-            return False
-        
-        # Download each file individually
-        for i, filename in enumerate(files, 1):
-            print(f"📥 Downloading file {i}/{len(files)}: {filename}")
             
-            try:
-                hf_hub_download(
-                    repo_id=repo_id,
-                    filename=filename,
-                    cache_dir=cache_dir,
-                    token=token,
-                    resume_download=True
-                )
-                print(f"✓ Downloaded: {filename}")
+            # Filter for important model files (download largest files first)
+            model_files = [f for f in files if f.endswith(('.bin', '.safetensors'))]
+            config_files = [f for f in files if f.endswith(('.json', '.txt'))]
+            
+            # Sort model files by size (download smaller files first for progress)
+            all_files = config_files + model_files
+            
+            print(f"Found {len(all_files)} files to download")
+            
+            for i, filename in enumerate(all_files, 1):
+                print(f"\n📥 [{i}/{len(all_files)}] Downloading: {filename}")
                 
-                # Small delay between downloads to prevent overwhelming the server
-                time.sleep(0.5)
-                
-            except Exception as e:
-                print(f"⚠️  Failed to download {filename}: {e}")
-                print("Continuing with next file...")
-                continue
+                try:
+                    hf_hub_download(
+                        repo_id=repo_id,
+                        filename=filename,
+                        cache_dir=cache_dir,
+                        token=token,
+                        resume_download=True,
+                        force_download=False  # Don't re-download if exists
+                    )
+                    print(f"✓ Downloaded: {filename}")
+                    
+                    # Small delay to prevent server overload
+                    time.sleep(1)
+                    
+                except Exception as e:
+                    print(f"⚠️  Error downloading {filename}: {e}")
+                    continue
+            
+            print("✓ Individual file download completed")
+            
+        except Exception as e:
+            print(f"Error in individual download: {e}")
+            raise
+
+    def check_model_device_distribution(self):
+        """Check where model layers are loaded"""
+        print("\n🔍 Model Device Distribution:")
         
-        print("✓ Sequential download completed")
-        return True
+        if hasattr(self.model, 'hf_device_map'):
+            device_map = self.model.hf_device_map
+            gpu_layers = sum(1 for device in device_map.values() if device == 0 or device == 'cuda:0')
+            cpu_layers = sum(1 for device in device_map.values() if device == 'cpu')
+            disk_layers = sum(1 for device in device_map.values() if 'disk' in str(device))
+            
+            print(f"GPU layers: {gpu_layers}")
+            print(f"CPU layers: {cpu_layers}")
+            print(f"Disk layers: {disk_layers}")
+            print(f"Total layers: {len(device_map)}")
+            
+            # Show some mappings
+            for i, (layer, device) in enumerate(list(device_map.items())[:5]):
+                print(f"  {layer}: {device}")
+            if len(device_map) > 5:
+                print(f"  ... and {len(device_map) - 5} more layers")
+        else:
+            print("No device map found - likely CPU-only mode")
+        
+        # Check GPU memory usage
+        if torch.cuda.is_available():
+            try:
+                gpu_memory_allocated = torch.cuda.memory_allocated(0) / (1024**3)
+                gpu_memory_reserved = torch.cuda.memory_reserved(0) / (1024**3)
+                gpu_memory_total = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+                
+                print(f"\n🔧 GPU Memory Usage:")
+                print(f"Allocated: {gpu_memory_allocated:.2f} GB")
+                print(f"Reserved: {gpu_memory_reserved:.2f} GB")
+                print(f"Total: {gpu_memory_total:.2f} GB")
+                print(f"Usage: {(gpu_memory_allocated/gpu_memory_total)*100:.1f}%")
+            except:
+                print("Could not get GPU memory info")
 
 
 class ConversationAPIHandler(BaseAPIHandler):
