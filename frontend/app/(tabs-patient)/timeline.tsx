@@ -53,7 +53,7 @@ export default function PersonalMemoryCalendar() {
     {
       id: 1,
       year: 2024,
-      month: 3, // April (0-indexed)
+      month: 3,
       day: 1,
       title: 'April Fools Day Fun',
       description: 'The grandkids tried to prank me with salt in the sugar bowl. We all had a good laugh.',
@@ -65,7 +65,7 @@ export default function PersonalMemoryCalendar() {
     {
       id: 2,
       year: 2024,
-      month: 3, // April
+      month: 3,
       day: 8,
       title: 'First Spring Flowers',
       description: 'The tulips I planted last fall are blooming beautifully in the front garden.',
@@ -77,7 +77,7 @@ export default function PersonalMemoryCalendar() {
     {
       id: 3,
       year: 2024,
-      month: 3, // April
+      month: 3,
       day: 15,
       title: 'Easter with Family',
       description: 'A wonderful day with everyone together. The children found all the eggs in the garden.',
@@ -89,7 +89,7 @@ export default function PersonalMemoryCalendar() {
     {
       id: 4,
       year: 2024,
-      month: 3, // April
+      month: 3,
       day: 23,
       title: 'Grandchildren Visit',
       description: 'Sarah and Tommy came over. We made chocolate chip cookies and they helped with the mixing.',
@@ -101,7 +101,7 @@ export default function PersonalMemoryCalendar() {
     {
       id: 5,
       year: 2024,
-      month: 2, // March
+      month: 2,
       day: 12,
       title: 'Birthday Celebration',
       description: 'My 75th birthday. Everyone sang happy birthday and we had my favorite chocolate cake.',
@@ -121,12 +121,18 @@ export default function PersonalMemoryCalendar() {
   const getCurrentMonthMemories = () => {
     return timelineEvents.filter(event => 
       event.month === selectedMonth && event.year === selectedYear
-    ).sort((a, b) => a.day - b.day); // Sort chronologically by day
+    ).sort((a, b) => a.day - b.day);
   };
+
+  // Determine responsive layout - 4x3 for mobile (4 rows, 3 columns)
+  const isSmallScreen = width < 380;
+  const columns = isSmallScreen ? 3 : 4; // 3 columns on mobile, 4 on larger screens
+  const rows = isSmallScreen ? 4 : 3;    // 4 rows on mobile, 3 on larger screens
 
   const CalendarView = () => (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fdf2f8" />
+      
       {/* Compact Header */}
       <View style={styles.compactHeader}>
         <View style={styles.compactHeaderContent}>
@@ -172,12 +178,14 @@ export default function PersonalMemoryCalendar() {
         </TouchableOpacity>
       </View>
 
-      {/* Month Grid - 4 columns x 3 rows like traditional calendar */}
+      {/* Responsive Month Grid */}
       <View style={styles.monthGrid}>
-        {[0, 1, 2].map((rowIndex) => (
+        {Array.from({ length: rows }, (_, rowIndex) => (
           <View key={rowIndex} style={styles.monthRow}>
-            {[0, 1, 2, 3].map((colIndex) => {
-              const monthIndex = rowIndex * 4 + colIndex;
+            {Array.from({ length: columns }, (_, colIndex) => {
+              const monthIndex = rowIndex * columns + colIndex;
+              if (monthIndex >= 12) return null; // Don't render if beyond 12 months
+              
               const month = months[monthIndex];
               const memories = getMonthMemories(monthIndex);
               const MonthIcon = month.icon;
@@ -197,7 +205,7 @@ export default function PersonalMemoryCalendar() {
                     </View>
                     
                     <View style={[styles.monthIconContainer, { backgroundColor: month.color }]}>
-                      <MonthIcon size={16} color={month.accent} />
+                      <MonthIcon size={isSmallScreen ? 14 : 16} color={month.accent} />
                     </View>
                     
                     <Text style={styles.monthName}>
@@ -231,7 +239,6 @@ export default function PersonalMemoryCalendar() {
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#fdf2f8" />
         <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Header */}
           <View style={styles.header}>
             <View style={styles.timelineHeader}>
               <TouchableOpacity
@@ -260,20 +267,16 @@ export default function PersonalMemoryCalendar() {
             </View>
           </View>
 
-          {/* Timeline */}
           <View style={styles.timelineContainer}>
             {memories.length > 0 ? (
               <View style={styles.timeline}>
                 {memories.map((memory, index) => (
                   <View key={memory.id} style={styles.timelineItem}>
-                    {/* Timeline dot */}
                     <View style={styles.timelineDot}>
                       <View style={styles.timelineDotInner} />
                     </View>
                     
-                    {/* Memory card */}
                     <View style={styles.memoryCard}>
-                      {/* Date badge */}
                       <View style={styles.memoryDateBadge}>
                         <View style={styles.memoryDateLeft}>
                           <Star size={12} color="#be185d" />
@@ -284,13 +287,11 @@ export default function PersonalMemoryCalendar() {
                         </View>
                       </View>
                       
-                      {/* Memory image */}
                       <Image 
                         source={{ uri: memory.image }}
                         style={styles.memoryImage}
                       />
                       
-                      {/* Memory content */}
                       <View style={styles.memoryContent}>
                         <Text style={styles.memoryTitle}>
                           {memory.title}
@@ -431,24 +432,23 @@ const styles = StyleSheet.create({
   },
   monthGrid: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 8,
   },
   monthRow: {
     flexDirection: 'row',
-    flex: 1,
     marginBottom: 8,
   },
   monthCard: {
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 12,
-    padding: 8,
+    padding: 12,
     marginHorizontal: 4,
     borderLeftWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
-    aspectRatio: 1,
+    minHeight: width < 380 ? 110 : 120,
   },
   monthCardContent: {
     alignItems: 'center',
@@ -464,15 +464,15 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   monthIconContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
+    width: width < 380 ? 28 : 32,
+    height: width < 380 ? 28 : 32,
+    borderRadius: width < 380 ? 8 : 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   monthName: {
-    fontSize: 11,
+    fontSize: width < 380 ? 11 : 13,
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 4,
@@ -484,21 +484,21 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   memoryCounterBadge: {
-    width: 18,
-    height: 18,
+    width: width < 380 ? 18 : 22,
+    height: width < 380 ? 18 : 22,
     backgroundColor: '#fce7f3',
-    borderRadius: 9,
+    borderRadius: width < 380 ? 9 : 11,
     justifyContent: 'center',
     alignItems: 'center',
   },
   memoryCounterText: {
     color: '#e11d48',
     fontWeight: '600',
-    fontSize: 10,
+    fontSize: width < 380 ? 9 : 11,
   },
   memoryCounterLabel: {
     color: '#6b7280',
-    fontSize: 9,
+    fontSize: width < 380 ? 8 : 10,
     textAlign: 'center',
   },
   header: {

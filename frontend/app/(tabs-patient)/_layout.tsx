@@ -1,8 +1,10 @@
 import { Tabs, useRouter } from 'expo-router';
 import { Home, Clock, MessageCircle, Users, Plus } from 'lucide-react-native';
-import { StyleSheet, ActivityIndicator, View, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, ActivityIndicator, View, TouchableOpacity, Text, Dimensions } from 'react-native';
 import { useAuth } from '@hooks/useAuth';
 import { useEffect } from 'react';
+
+const { width } = Dimensions.get('window');
 
 function CustomTabBar({ state, descriptors, navigation }) {
   const router = useRouter();
@@ -11,81 +13,110 @@ function CustomTabBar({ state, descriptors, navigation }) {
   const leftRoutes = state.routes.slice(0, 2); // index, timeline
   const rightRoutes = state.routes.slice(2);   // chat, patient
 
+  // Responsive sizing
+  const isSmallScreen = width < 380;
+  const fabSize = isSmallScreen ? 56 : 64;
+  const tabItemWidth = isSmallScreen ? 60 : 80;
+
   return (
     <View style={styles.tabBar}>
-      {leftRoutes.map((route, index) => {
-        const { options } = descriptors[route.key];
-        const label =
-          options.tabBarLabel !== undefined
-            ? options.tabBarLabel
-            : options.title !== undefined
-            ? options.title
-            : route.name;
+      {/* Left tabs */}
+      <View style={styles.tabSection}>
+        {leftRoutes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const label =
+            options.tabBarLabel !== undefined
+              ? options.tabBarLabel
+              : options.title !== undefined
+              ? options.title
+              : route.name;
 
-        const isFocused = state.index === index;
+          const isFocused = state.index === index;
 
-        let icon;
-        if (route.name === 'index') icon = <Home size={24} color={isFocused ? '#8B5A9F' : '#9CA3AF'} />;
-        if (route.name === 'timeline') icon = <Clock size={24} color={isFocused ? '#8B5A9F' : '#9CA3AF'} />;
+          let icon;
+          if (route.name === 'index') icon = <Home size={isSmallScreen ? 22 : 24} color={isFocused ? '#8B5A9F' : '#9CA3AF'} />;
+          if (route.name === 'timeline') icon = <Clock size={isSmallScreen ? 22 : 24} color={isFocused ? '#8B5A9F' : '#9CA3AF'} />;
 
-        return (
-          <TouchableOpacity
-            key={route.key}
-            accessibilityRole="button"
-            accessibilityState={isFocused ? { selected: true } : {}}
-            onPress={() => navigation.navigate(route.name)}
-            style={styles.tabItem}
-            activeOpacity={0.7}
-          >
-            {icon}
-            <Text style={[styles.tabBarLabel, { color: isFocused ? '#8B5A9F' : '#9CA3AF' }]}>{label}</Text>
-          </TouchableOpacity>
-        );
-      })}
+          return (
+            <TouchableOpacity
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              onPress={() => navigation.navigate(route.name)}
+              style={[styles.tabItem, { width: tabItemWidth }]}
+              activeOpacity={0.7}
+            >
+              {icon}
+              <Text style={[styles.tabBarLabel, { 
+                color: isFocused ? '#8B5A9F' : '#9CA3AF',
+                fontSize: isSmallScreen ? 10 : 12
+              }]}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
 
       {/* Center FAB */}
       <TouchableOpacity
-        key="add-memory-fab"
-        style={styles.fabContainer}
+        style={[styles.fabContainer, { 
+          width: fabSize,
+          height: fabSize,
+          borderRadius: fabSize / 2,
+          marginHorizontal: isSmallScreen ? 8 : 16
+        }]}
         onPress={() => router.push('/add-memory')}
         activeOpacity={0.85}
       >
-        <View style={styles.fab}>
-          <Plus size={32} color="#fff" />
+        <View style={[styles.fab, { 
+          width: fabSize,
+          height: fabSize,
+          borderRadius: fabSize / 2
+        }]}>
+          <Plus size={isSmallScreen ? 28 : 32} color="#fff" />
         </View>
       </TouchableOpacity>
 
-      {rightRoutes.map((route, idx) => {
-        // idx + 2 because rightRoutes starts from index 2
-        const index = idx + 2;
-        const { options } = descriptors[route.key];
-        const label =
-          options.tabBarLabel !== undefined
-            ? options.tabBarLabel
-            : options.title !== undefined
-            ? options.title
-            : route.name;
+      {/* Right tabs */}
+      <View style={styles.tabSection}>
+        {rightRoutes.map((route, idx) => {
+          // idx + 2 because rightRoutes starts from index 2
+          const index = idx + 2;
+          const { options } = descriptors[route.key];
+          const label =
+            options.tabBarLabel !== undefined
+              ? options.tabBarLabel
+              : options.title !== undefined
+              ? options.title
+              : route.name;
 
-        const isFocused = state.index === index;
+          const isFocused = state.index === index;
 
-        let icon;
-        if (route.name === 'chat') icon = <MessageCircle size={24} color={isFocused ? '#8B5A9F' : '#9CA3AF'} />;
-        if (route.name === 'patient') icon = <Users size={24} color={isFocused ? '#8B5A9F' : '#9CA3AF'} />;
+          let icon;
+          if (route.name === 'chat') icon = <MessageCircle size={isSmallScreen ? 22 : 24} color={isFocused ? '#8B5A9F' : '#9CA3AF'} />;
+          if (route.name === 'patient') icon = <Users size={isSmallScreen ? 22 : 24} color={isFocused ? '#8B5A9F' : '#9CA3AF'} />;
 
-        return (
-          <TouchableOpacity
-            key={route.key}
-            accessibilityRole="button"
-            accessibilityState={isFocused ? { selected: true } : {}}
-            onPress={() => navigation.navigate(route.name)}
-            style={styles.tabItem}
-            activeOpacity={0.7}
-          >
-            {icon}
-            <Text style={[styles.tabBarLabel, { color: isFocused ? '#8B5A9F' : '#9CA3AF' }]}>{label}</Text>
-          </TouchableOpacity>
-        );
-      })}
+          return (
+            <TouchableOpacity
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              onPress={() => navigation.navigate(route.name)}
+              style={[styles.tabItem, { width: tabItemWidth }]}
+              activeOpacity={0.7}
+            >
+              {icon}
+              <Text style={[styles.tabBarLabel, { 
+                color: isFocused ? '#8B5A9F' : '#9CA3AF',
+                fontSize: isSmallScreen ? 10 : 12
+              }]}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -107,7 +138,7 @@ export default function TabLayout() {
   if (loading || !user) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#8B5A9F" />
       </View>
     );
   }
@@ -157,30 +188,36 @@ const styles = StyleSheet.create({
     height: 80,
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  tabSection: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'space-around',
+    alignItems: 'center',
   },
   tabItem: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 8,
+    paddingHorizontal: 4,
   },
   tabBarLabel: {
     fontFamily: 'Inter-Medium',
-    fontSize: 12,
+    fontWeight: '500',
     marginTop: 4,
   },
   fabContainer: {
-    position: 'absolute',
-    left: '50%',
-    bottom: 16,
-    transform: [{ translateX: -32 }],
-    zIndex: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 8,
+    shadowColor: '#8B5A9F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   fab: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
     backgroundColor: '#8B5A9F',
     alignItems: 'center',
     justifyContent: 'center',
