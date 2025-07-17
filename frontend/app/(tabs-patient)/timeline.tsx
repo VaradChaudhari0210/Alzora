@@ -27,6 +27,8 @@ import {
   Leaf
 } from 'lucide-react-native';
 
+const { width, height } = Dimensions.get('window');
+
 const months = [
   { name: 'January', icon: Snowflake, color: '#dbeafe', accent: '#3b82f6', border: '#bfdbfe' },
   { name: 'February', icon: Heart, color: '#fce7f3', accent: '#ec4899', border: '#f9a8d4' },
@@ -105,108 +107,79 @@ const timelineEvents = [
   }
 ];
 
+// ... [IMPORTS AND MONTH/EVENT DATA REMAIN UNCHANGED]
+
 export default function PersonalMemoryCalendar() {
   const [selectedYear, setSelectedYear] = useState(2024);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [view, setView] = useState('calendar');
-  const [columns, setColumns] = useState(4);
-  const [cardSize, setCardSize] = useState(80);
-
-  useEffect(() => {
-    const updateLayout = () => {
-      const screenWidth = Dimensions.get('window').width;
-      let numCols = 4;
-      if (screenWidth <= 360) numCols = 3;
-      else if (screenWidth <= 420) numCols = 4;
-      else numCols = 4;
-
-      const totalMargin = 40 + 12 * (numCols - 1); // horizontal padding + spacing
-      const size = (screenWidth - totalMargin) / numCols;
-
-      setColumns(numCols);
-      setCardSize(size);
-    };
-
-    updateLayout();
-    const sub = Dimensions.addEventListener('change', updateLayout);
-    return () => sub.remove();
-  }, []);
 
   const getMonthMemories = (monthIndex) =>
     timelineEvents.filter((e) => e.month === monthIndex && e.year === selectedYear);
-
-  const CalendarView = () => (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fdf2f8" />
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.title}>Your Memory Calendar</Text>
-          <View style={styles.yearNav}>
-            <TouchableOpacity onPress={() => setSelectedYear(selectedYear - 1)}>
-              <ChevronLeft size={20} color="#6b7280" />
-            </TouchableOpacity>
-            <Text style={styles.yearText}>{selectedYear}</Text>
-            <TouchableOpacity onPress={() => setSelectedYear(selectedYear + 1)}>
-              <ChevronRight size={20} color="#6b7280" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
-      <FlatList
-        data={months}
-        numColumns={columns}
-        key={columns} // forces re-render on column change
-        columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 12 }}
-        contentContainerStyle={{ padding: 20 }}
-        keyExtractor={(_, i) => i.toString()}
-        renderItem={({ item, index }) => {
-          const MonthIcon = item.icon;
-          const memories = getMonthMemories(index);
-
-          return (
-            <TouchableOpacity
-              onPress={() => {
-                setSelectedMonth(index);
-                setView('timeline');
-              }}
-              style={[
-                {
-                  width: cardSize,
-                  height: cardSize,
-                  backgroundColor: 'rgba(255,255,255,0.9)',
-                  borderRadius: 16,
-                  borderLeftWidth: 3,
-                  borderLeftColor: item.border,
-                  padding: 10,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }
-              ]}
-            >
-              <View style={{ backgroundColor: item.color, padding: 6, borderRadius: 8 }}>
-                <MonthIcon size={cardSize < 80 ? 14 : 16} color={item.accent} />
-              </View>
-              <Text style={{ fontSize: 12, marginTop: 6, fontWeight: '600', color: '#1f2937' }}>
-                {item.name.slice(0, 3)}
-              </Text>
-              <View style={{ marginTop: 4, backgroundColor: '#fce7f3', borderRadius: 10, paddingHorizontal: 6 }}>
-                <Text style={{ fontSize: 10, color: '#e11d48' }}>{memories.length}</Text>
-              </View>
-              <Text style={{ fontSize: 10, color: '#6b7280' }}>
-                {memories.length === 1 ? 'memory' : 'memories'}
-              </Text>
-            </TouchableOpacity>
-          );
-        }}
-      />
-    </SafeAreaView>
-  );
 
   const getCurrentMonthMemories = () =>
     timelineEvents
       .filter((e) => e.month === selectedMonth && e.year === selectedYear)
       .sort((a, b) => a.day - b.day);
+
+  const CalendarView = () => {
+    const renderMonth = ({ item, index }) => {
+      const memories = getMonthMemories(index);
+      const MonthIcon = item.icon;
+
+      return (
+        <TouchableOpacity
+          onPress={() => {
+            setSelectedMonth(index);
+            setView('timeline');
+          }}
+          style={styles.card}
+        >
+          <Star size={6} color="#d1d5db" style={styles.starIcon} />
+          <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
+            <MonthIcon size={20} color={item.accent} />
+          </View>
+          <Text style={styles.monthText}>{item.name.slice(0, 3)}</Text>
+          <View style={styles.memoryCountBadge}>
+            <Text style={styles.memoryCountText}>
+              {memories.length}
+            </Text>
+          </View>
+          <Text style={styles.memoryLabel}>
+            {memories.length === 1 ? 'memory' : 'memories'}
+          </Text>
+        </TouchableOpacity>
+      );
+    };
+
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#fdf2f8" />
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Text style={styles.title}>Your Memory Calendar</Text>
+            <View style={styles.yearNav}>
+              <TouchableOpacity onPress={() => setSelectedYear(selectedYear - 1)}>
+                <ChevronLeft size={20} color="#6b7280" />
+              </TouchableOpacity>
+              <Text style={styles.yearText}>{selectedYear}</Text>
+              <TouchableOpacity onPress={() => setSelectedYear(selectedYear + 1)}>
+                <ChevronRight size={20} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        <FlatList
+          data={months}
+          renderItem={renderMonth}
+          keyExtractor={(_, i) => i.toString()}
+          numColumns={3}
+          contentContainerStyle={styles.grid}
+        />
+      </SafeAreaView>
+    );
+  };
 
   const TimelineView = () => {
     const memories = getCurrentMonthMemories();
@@ -221,7 +194,6 @@ export default function PersonalMemoryCalendar() {
             <TouchableOpacity onPress={() => setView('calendar')} style={{ marginBottom: 20 }}>
               <ArrowLeft size={24} color="#6b7280" />
             </TouchableOpacity>
-
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
               <View style={{ backgroundColor: currentMonth.color, padding: 10, borderRadius: 12, marginRight: 12 }}>
                 <MonthIcon size={24} color={currentMonth.accent} />
@@ -237,8 +209,7 @@ export default function PersonalMemoryCalendar() {
                 </Text>
               </View>
             </View>
-
-            {memories.map((m, i) => (
+            {memories.map((m) => (
               <View key={m.id} style={{ marginBottom: 24 }}>
                 <Image source={{ uri: m.image }} style={{ width: '100%', height: 180, borderRadius: 12 }} />
                 <Text style={{ fontSize: 16, fontWeight: '600', marginTop: 8 }}>{m.title}</Text>
@@ -255,19 +226,26 @@ export default function PersonalMemoryCalendar() {
   return view === 'calendar' ? <CalendarView /> : <TimelineView />;
 }
 
+// 💡 STYLES FIXED
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fdf2f8'
   },
   header: {
-    padding: 20,
-    backgroundColor: 'rgba(255,255,255,0.9)'
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
   },
   headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
   title: {
     fontSize: 20,
@@ -283,5 +261,62 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: '#1f2937'
+  },
+  grid: {
+    paddingHorizontal: 12,
+    paddingBottom: 20,
+    justifyContent: 'center'
+  },
+  card: {
+    flex: 1,
+    margin: 6,
+    aspectRatio: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 16,
+    borderLeftWidth: 3,
+    borderLeftColor: '#ddd',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    maxWidth: '30%' // Enforces 3 per row consistently
+  },
+  starIcon: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    opacity: 0.3
+  },
+  iconContainer: {
+    padding: 8,
+    borderRadius: 50,
+    marginBottom: 4
+  },
+  monthText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 2
+  },
+  memoryCountBadge: {
+    backgroundColor: '#fce7f3',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    marginTop: 2
+  },
+  memoryCountText: {
+    color: '#e11d48',
+    fontWeight: '600',
+    fontSize: 11
+  },
+  memoryLabel: {
+    fontSize: 10,
+    color: '#6b7280',
+    marginTop: 2
   }
 });
