@@ -1,0 +1,27 @@
+# AI Systems Requirements for Alzheimer's Companion App
+
+# Core ML/AI frameworks
+torch>=2.0.0
+transformers>=4.30.0
+accelerate>=0.20.0
+bitsandbytes>=0.39.0
+
+# TTS System
+soundfile>=0.12.1
+snac>=1.0.0
+
+# Conversation AI System  
+llama-cpp-python>=0.2.0
+huggingface-hub>=0.16.0
+
+# Audio processing (optional, for speed control)
+librosa>=0.10.0
+scipy>=1.11.0
+
+# API and utilities
+requests>=2.31.0
+
+# Data handling
+numpy>=1.24.0
+pathlib>=1.0.1
+uuid
