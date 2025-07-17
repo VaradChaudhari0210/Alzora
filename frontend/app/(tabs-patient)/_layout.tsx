@@ -13,9 +13,9 @@ function CustomTabBar({ state, descriptors, navigation }) {
   const leftRoutes = state.routes.slice(0, 2); // index, timeline
   const rightRoutes = state.routes.slice(2);   // chat, patient
 
-  // Responsive sizing
+  // Responsive sizing - make FAB smaller and better positioned
   const isSmallScreen = width < 380;
-  const fabSize = isSmallScreen ? 56 : 64;
+  const fabSize = isSmallScreen ? 44 : 48; // Smaller FAB
   const tabItemWidth = isSmallScreen ? 60 : 80;
 
   return (
@@ -64,7 +64,8 @@ function CustomTabBar({ state, descriptors, navigation }) {
           width: fabSize,
           height: fabSize,
           borderRadius: fabSize / 2,
-          marginHorizontal: isSmallScreen ? 8 : 16
+          marginHorizontal: isSmallScreen ? 8 : 12, // Reduced margins
+          marginTop: -8, // Slight upward positioning
         }]}
         onPress={() => router.push('/add-memory')}
         activeOpacity={0.85}
@@ -74,7 +75,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
           height: fabSize,
           borderRadius: fabSize / 2
         }]}>
-          <Plus size={isSmallScreen ? 28 : 32} color="#fff" />
+          <Plus size={isSmallScreen ? 20 : 22} color="#fff" />
         </View>
       </TouchableOpacity>
 
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     height: 80,
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     paddingVertical: 8,
   },
   tabSection: {
@@ -211,20 +212,20 @@ const styles = StyleSheet.create({
   fabContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 8,
+    elevation: 6, // Reduced shadow intensity
     shadowColor: '#8B5A9F',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
   fab: {
     backgroundColor: '#8B5A9F',
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 8,
+    elevation: 6, // Reduced shadow intensity
     shadowColor: '#8B5A9F',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
 });
