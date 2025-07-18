@@ -18,6 +18,11 @@ model User {
   fullName     String
   email        String    @unique
   passwordHash String
+  nickname     String?
+  DateOfBirth  String?
+  Address      String?
+  Phone        String?
+  Interests    String[]
   role         Role
   createdAt    DateTime  @default(now())
   memoryUploads     MemoryUpload[]
@@ -25,6 +30,20 @@ model User {
   chatLogs          ChatLog[]
   feedbacks         Feedback[]
   faceRegistryItems FaceRegistry[]
+
+  MedicalInfo MedicalInfo?
+}
+
+model MedicalInfo {
+  id           Int      @id @default(autoincrement())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int      @unique
+  primaryDoctor String
+  diagnosis     String
+  medications   String[]
+  allergies     String[]
+  bloodType     String
+  lastCheckup   DateTime
 }
 
 model MemoryUpload {

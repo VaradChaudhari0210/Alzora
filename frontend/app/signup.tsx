@@ -27,6 +27,7 @@ import {
   ArrowLeft
 } from 'lucide-react-native';
 import { useAuth } from '@hooks/useAuth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -85,40 +86,37 @@ export default function SignupScreen() {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:3000/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-          role: formData.role,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        await setToken(data.token, data.user);
+      // Store basic info locally for patients only
+      if (formData.role === 'patient') {
+        await AsyncStorage.setItem('pendingSignup', JSON.stringify(formData));
         Alert.alert(
-          'Account Created!',
-          'Welcome to Alzora. Your account has been created successfully.',
+          'Continue Profile Setup',
+          'Please complete your profile details.',
           [
             {
-              text: 'Get Started',
-              onPress: () => {
-                if (data.user.role === 'caregiver') {
-                  router.replace('/(tabs-caregiver)');
-                } else {
-                  router.replace('/(tabs-patient)');
-                }
-              }
+              text: 'Next',
+              onPress: () => router.replace('/patient-details')
             }
           ]
         );
       } else {
-        Alert.alert('Signup Failed', data.message || 'Could not create account');
+        // For caregivers, call backend signup API directly
+        const res = await fetch('http://192.168.56.1:3000/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          await setToken(data.token, data.user);
+          Alert.alert('Success', 'Account created!');
+          router.replace('/(tabs-caregiver)');
+        } else {
+          Alert.alert('Error', data.message || 'Could not create account');
+        }
       }
     } catch (err) {
-      Alert.alert('Error', 'Could not connect to server');
+      Alert.alert('Error', 'Could not save signup info');
     }
     setIsLoading(false);
   };

@@ -26,6 +26,7 @@ import {
   Star,
   Leaf
 } from 'lucide-react-native';
+import { Video } from 'expo-av';
 
 const { width, height } = Dimensions.get('window');
 
@@ -104,6 +105,80 @@ const timelineEvents = [
     type: 'Special',
     location: 'Living Room',
     time: '6:00 PM'
+  },
+  {
+    id: 6,
+    year: 2024,
+    month: 2,
+    day: 12,
+    title: 'Birthday Celebration',
+    description: 'My 75th birthday. Everyone sang happy birthday and we had my favorite chocolate cake.',
+    image: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=400&h=300&fit=crop',
+    type: 'Special',
+    location: 'Living Room',
+    time: '6:00 PM'
+  },
+  {
+    id: 7,
+    year: 2024,
+    month: 3,
+    day: 8,
+    title: 'First Spring Flowers',
+    description: 'The tulips I planted last fall are blooming beautifully in the front garden.',
+    image: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400&h=300&fit=crop',
+    type: 'Garden',
+    location: 'Front Garden',
+    time: '10:00 AM'
+  },
+  {
+    id: 8,
+    year: 2024,
+    month: 3,
+    day: 15,
+    title: 'Easter with Family',
+    description: 'A wonderful day with everyone together. The children found all the eggs in the garden.',
+    image: 'https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=400&h=300&fit=crop',
+    type: 'Family',
+    location: 'Home',
+    time: '2:00 PM'
+  },
+  {
+    id: 9,
+    year: 2024,
+    month: 4,
+    day: 1,
+    title: 'April Fools Day Fun',
+    description: 'The grandkids tried to prank me with salt in the sugar bowl. We all had a good laugh.',
+    image: 'https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=400&h=300&fit=crop',
+    type: 'Family',
+    location: 'Kitchen',
+    time: '9:00 AM'
+  },
+  {
+    id: 10,
+    year: 2024,
+    month: 4,
+    day: 10,
+    title: 'Family Picnic Video',
+    description: 'A sunny day at the park with family. Watch the picnic highlights!',
+    video: 'https://www.w3schools.com/html/mov_bbb.mp4',
+    thumbnail: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400&h=300&fit=crop',
+    type: 'Video',
+    location: 'Central Park',
+    time: '12:00 PM'
+  },
+  {
+    id: 11,
+    year: 2024,
+    month: 5,
+    day: 20,
+    title: 'Grandchildren Visit Video',
+    description: 'Sarah and Tommy came over. We made chocolate chip cookies and recorded a fun video.',
+    video: 'https://www.w3schools.com/html/movie.mp4',
+    thumbnail: 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=400&h=300&fit=crop',
+    type: 'Video',
+    location: 'Home',
+    time: '3:00 PM'
   }
 ];
 
@@ -211,7 +286,19 @@ export default function PersonalMemoryCalendar() {
             </View>
             {memories.map((m) => (
               <View key={m.id} style={{ marginBottom: 24 }}>
-                <Image source={{ uri: m.image }} style={{ width: '100%', height: 180, borderRadius: 12 }} />
+                {m.video ? (
+                  <>
+                    <Image source={{ uri: m.thumbnail }} style={{ width: '100%', height: 180, borderRadius: 12 }} />
+                    <Video
+                      source={{ uri: m.video }}
+                      style={{ width: '100%', height: 180, borderRadius: 12, marginTop: 8 }}
+                      useNativeControls
+                      resizeMode="contain"
+                    />
+                  </>
+                ) : (
+                  <Image source={{ uri: m.image }} style={{ width: '100%', height: 180, borderRadius: 12 }} />
+                )}
                 <Text style={{ fontSize: 16, fontWeight: '600', marginTop: 8 }}>{m.title}</Text>
                 <Text style={{ color: '#6b7280', marginBottom: 4 }}>{m.time} · {m.location}</Text>
                 <Text style={{ color: '#374151' }}>{m.description}</Text>
