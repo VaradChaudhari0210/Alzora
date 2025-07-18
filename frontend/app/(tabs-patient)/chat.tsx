@@ -92,15 +92,60 @@ export default function ChatScreen() {
     }
   };
 
+  // Hardcoded keyword-based responses
+  const responseMap = [
+    {
+      keywords: ["wedding", "married", "marriage", "aisle"],
+      response: "Your wedding day was truly special! Would you like to share more about that beautiful moment?"
+    },
+    {
+      keywords: ["birthday", "born"],
+      response: "Happy birthday memories are always wonderful! Do you remember your favorite birthday celebration?"
+    },
+    {
+      keywords: ["children", "grandchildren", "kids", "family"],
+      response: "Family is so important. Would you like to talk about your children or grandchildren?"
+    },
+    {
+      keywords: ["music", "song", "sing", "playlist"],
+      response: "Music can bring back wonderful memories. Do you have a favorite song you'd like to listen to?"
+    },
+    {
+      keywords: ["photo", "picture", "image", "vault"],
+      response: "Would you like to look at some photos together or add a new one to your memory vault?"
+    },
+    {
+      keywords: ["home", "house", "childhood"],
+      response: "Tell me about your childhood home. What made it special for you?"
+    },
+    {
+      keywords: ["work", "job", "career", "office"],
+      response: "Your career journey is inspiring! What was your first day of work like?"
+    },
+    {
+      keywords: ["favorite", "like", "love"],
+      response: "It's wonderful to have favorites. What do you love the most these days?"
+    },
+    {
+      keywords: ["help", "support", "assist"],
+      response: "I'm always here to help. Is there something specific you'd like assistance with?"
+    },
+    {
+      keywords: ["memory", "remember", "forget"],
+      response: "It's okay if you forget some details. I'm here to help you remember and cherish your memories."
+    }
+  ];
+
+  const defaultResponse = "I'm here to listen. Please tell me more or ask me anything about your memories.";
+
   const generateAIResponse = (userMessage) => {
-    const responses = [
-      "That brings back such beautiful memories! Tell me more about that special moment.",
-      "I can hear the joy in your words. Those memories are truly precious.",
-      "What a wonderful story! Would you like to save this memory in your vault?",
-      "That sounds like such a meaningful time. How did it make you feel?",
-      "I love hearing about these special moments in your life. They're so important to cherish."
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
+    const lowerMsg = userMessage.toLowerCase();
+    for (const entry of responseMap) {
+      if (entry.keywords.some(keyword => lowerMsg.includes(keyword))) {
+        return entry.response;
+      }
+    }
+    return defaultResponse;
   };
 
   const formatTimestamp = (timestamp) => {
