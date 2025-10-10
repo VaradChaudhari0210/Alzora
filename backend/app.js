@@ -17,6 +17,8 @@ app.use(express.urlencoded({extended: false}));
 app.use('/auth',authRoutes);
 app.use('/memory',memoryRoutes);
 
-app.listen(PORT,(req,res) => {
-    console.log(`server running on port:http://localhost:${PORT}`);
-})
+app.get('/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`server running on port: http://0.0.0.0:${PORT}`);
+});

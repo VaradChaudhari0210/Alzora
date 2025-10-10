@@ -40,7 +40,7 @@ export default function PatientDetailsScreen() {
         }
         };
 
-        const res = await fetch('http://192.168.56.1:3000/auth/patient-signup', {
+        const res = await fetch('http://10.0.2.2:3000/auth/patient-signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
